@@ -2,8 +2,12 @@
 """Contains the definition for the function `filter_datum`"""
 
 import logging
+import mysql.connector
+import os
 import re
 from typing import List
+
+PII_FIELDS = ('name', 'email', 'phone', 'ssn', 'password')
 
 
 def filter_datum(fields: List[str], redaction: str, message: str,
@@ -13,6 +17,50 @@ def filter_datum(fields: List[str], redaction: str, message: str,
         message = re.sub(f'{field}=.*?{separator}',
                          f'{field}={redaction}{separator}', message)
     return message
+
+
+def get_logger() -> logging.Logger:
+    """Returns a logging.Logger object"""
+    logger = logging.getLogger('user_data')
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    streamHandler = logging.StreamHandler()
+    formatter = RedactingFormatter(PII_FIELDS)
+
+    streamHandler.setFormatter(formatter)
+    logger.addHandler(streamHandler)
+
+    return logger
+
+
+def get_db() -> mysql.connector.connection.MySQLConnection:
+    """Creates a connection to a database and returns the connector"""
+    db = mysql.connector.connect(
+        host=os.getenv('PERSONAL_DATA_DB_HOST', 'localhost'),
+        user=os.getenv('PERSONAL_DATA_DB_USERNAME', 'root'),
+        password=os.getenv('PERSONAL_DATA_DB_PASSWORD', ''),
+        database=os.getenv('PERSONAL_DATA_DB_NAME')
+    )
+    return db
+
+
+def main():
+    """Retrieves all rows in the users table and displays them
+    under a filtered format
+    """
+    db = get_db()
+    dbCursor = db.cursor()
+    dbCursor.execute('SELECT * FROM users;')
+    fields = dbCursor.column_names
+    logger = get_logger()
+
+    for row in dbCursor:
+        message = ''.join('{}={}; '.format(k, v) for k, v in zip(fields, row))
+        logger.info(message.strip())
+
+    dbCursor.close()
+    db.close()
 
 
 class RedactingFormatter(logging.Formatter):
@@ -33,3 +81,7 @@ class RedactingFormatter(logging.Formatter):
         record.msg = filter_datum(self.fields, self.REDACTION,
                                   record.getMessage(), self.SEPARATOR)
         return super(RedactingFormatter, self).format(record)
+
+
+if __name__ == '__main__':
+    main()
