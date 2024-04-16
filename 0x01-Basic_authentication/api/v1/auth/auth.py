@@ -20,7 +20,6 @@ class Auth:
                 return False
         return True
 
-
     def authorization_header(self, request=None) -> str:
         """Checks if a request contains an authorization header
         and returns the specified authorization type if present
@@ -28,7 +27,6 @@ class Auth:
         if request is not None:
             return request.headers.get('Authorization')
         return None
-
 
     def current_user(self, request=None) -> TypeVar('User'):
         """Pass
