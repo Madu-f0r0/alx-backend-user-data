@@ -29,6 +29,11 @@ class Auth:
         return None
 
     def current_user(self, request=None) -> TypeVar('User'):
-        """Pass
+        """Creates a user object from a login request
         """
-        return None
+        auth_header = self.authorization_header(request)
+        auth_token = self.extract_base64_authorization_header(auth_header)
+        decoded_token = self.decode_base64_authorization_header(auth_token)
+        user_email, user_pwd = self.extract_user_credentials(decoded_token)
+        user = self.user_object_from_credentials(user_email, user_pwd)
+        return user
