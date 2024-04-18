@@ -2,6 +2,7 @@
 """Contains the definition of the class `Auth`
 """
 
+import os
 from flask import request
 from typing import List, TypeVar
 
