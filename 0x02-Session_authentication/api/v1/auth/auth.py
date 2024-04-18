@@ -42,7 +42,7 @@ class Auth:
         return user
 
     def session_cookie(self, request=None):
-        """Returns the session cookie of a specified request
+        """Returns the session id of a specified request
         """
         if request is not None:
             session_cookie = os.getenv('SESSION_NAME')

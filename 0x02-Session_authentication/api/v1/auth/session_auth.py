@@ -4,6 +4,7 @@
 
 from .auth import Auth
 from uuid import uuid4
+from models.user import User
 
 
 class SessionAuth(Auth):
@@ -26,3 +27,12 @@ class SessionAuth(Auth):
         if session_id is not None and type(session_id) is str:
             return self.user_id_by_session_id.get(session_id)
         return None
+
+    def current_user(self, request=None):
+        """Returns the current user sending a specified request
+        using the session cookie in the request header
+        """
+        session_id = self.session_cookie(request)
+        user_id = self.user_id_for_session_id(session_id)
+        user = User.get(user_id)
+        return user
