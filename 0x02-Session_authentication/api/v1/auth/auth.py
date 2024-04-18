@@ -31,6 +31,8 @@ class Auth:
     def current_user(self, request=None) -> TypeVar('User'):
         """Creates a user object from a login request
         """
+        if self.__class__.__name__ == 'SessionAuth':
+            return None
         auth_header = self.authorization_header(request)
         auth_token = self.extract_base64_authorization_header(auth_header)
         decoded_token = self.decode_base64_authorization_header(auth_token)
