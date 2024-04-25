@@ -51,12 +51,12 @@ class DB:
             raise NoResultFound
         return user
 
-    def update_user(self, user_id: int, **kwargs):
+    def update_user(self, user_id: int, **kwargs) -> None:
         """Updates user's attributes with values passed
         """
         user = self.find_user_by(id=user_id)
         for key, value in kwargs.items():
-            if key not in user.__table__.columns:
+            if not hasattr(user, key):
                 raise ValueError
             else:
                 user.key = value
